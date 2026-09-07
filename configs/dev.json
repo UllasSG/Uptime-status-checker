@@ -1,0 +1,15 @@
+{
+    "workers": 8,
+    "db_path": "uptime.db",
+    "retention_hrs": 720,
+    "targets": [
+      {
+        "name": "example-api",
+        "url": "https://api.example.com/health",
+        "interval_secs": 30,
+        "timeout_secs": 5,
+        "expected_status": [200],
+        "failure_threshold": 3
+      }
+    ]
+}

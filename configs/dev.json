@@ -6,7 +6,31 @@
       {
         "name": "example-api",
         "url": "https://api.example.com/health",
-        "interval_secs": 30,
+        "interval_secs": 15,
+        "timeout_secs": 5,
+        "expected_status": [200],
+        "failure_threshold": 3
+      },
+      {
+        "name": "google",
+        "url": "https://www.google.com",
+        "interval_secs": 3,
+        "timeout_secs": 5,
+        "expected_status": [200],
+        "failure_threshold": 3
+      },
+      {
+        "name": "github-api",
+        "url": "https://api.github.com",
+        "interval_secs": 5,
+        "timeout_secs": 5,
+        "expected_status": [200],
+        "failure_threshold": 3
+      },
+      {
+        "name": "cloudflare",
+        "url": "https://www.cloudflare.com",
+        "interval_secs": 8,
         "timeout_secs": 5,
         "expected_status": [200],
         "failure_threshold": 3

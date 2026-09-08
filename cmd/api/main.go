@@ -13,6 +13,7 @@ import (
 
 	"github.com/UllasSG/Uptime-status-checker/internal/config"
 	"github.com/UllasSG/Uptime-status-checker/internal/handler"
+	"github.com/UllasSG/Uptime-status-checker/internal/scheduler"
 )
 
 func main() {
@@ -23,23 +24,30 @@ func main() {
 	var configPath string
 
 	flag.StringVar(&addr, "addr", ":8080", "port the server should run on")
-	flag.StringVar(&configPath, "configPath", "configs/dev.json", "port the server should run on")
+	flag.StringVar(&configPath, "configPath", "configs/dev.json", "path to the config file")
 
-	_, err := config.Load(configPath)
+	cfg, err := config.Load(configPath)
 	if err != nil {
 		log.Fatal("Cannot load config")
 	}
 
+	srv := handler.NewServer(cfg)
+
+	jobs := make(chan scheduler.Job, 100)
+	worker := scheduler.NewWorker(jobs)
+	sched := scheduler.NewScheduler(cfg.Targets, jobs, worker)
+	sched.Dispatch(ctx)
+
 	mux := http.NewServeMux()
-	mux.HandleFunc("GET /healthz", handler.Health)
-	srv := &http.Server{
-		Addr:    ":8080",
+	mux.HandleFunc("GET /healthz", srv.Health)
+	httpSrv := &http.Server{
+		Addr:    addr,
 		Handler: mux,
 	}
 
 	go func() {
-		log.Println("Server started at :8080")
-		if err := srv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
+		log.Printf("Server started at %s", addr)
+		if err := httpSrv.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			log.Fatalf("ListenAndServe: %s", err)
 		}
 	}()
@@ -49,7 +57,7 @@ func main() {
 
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
-	if err := srv.Shutdown(shutdownCtx); err != nil {
+	if err := httpSrv.Shutdown(shutdownCtx); err != nil {
 		log.Fatalf("Shutdown: %s", err)
 	}
 }

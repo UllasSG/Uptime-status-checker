@@ -1,0 +1,7 @@
+# Compiled binary
+/uptime
+
+# Runtime SQLite database (+ WAL/SHM sidecars)
+uptime.db
+uptime.db-wal
+uptime.db-shm

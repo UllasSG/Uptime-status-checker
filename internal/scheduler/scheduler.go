@@ -10,10 +10,10 @@ import (
 type Scheduler struct {
 	targets []config.Target
 	jobs    chan<- Job
-	worker  *Worker
+	worker  *WorkerPool
 }
 
-func NewScheduler(targets []config.Target, jobs chan<- Job, worker *Worker) *Scheduler {
+func NewScheduler(targets []config.Target, jobs chan<- Job, worker *WorkerPool) *Scheduler {
 	return &Scheduler{
 		targets: targets,
 		jobs:    jobs,
@@ -34,8 +34,8 @@ func schedule(ctx context.Context, t config.Target, s *Scheduler) {
 	}
 }
 
-func (s *Scheduler) Dispatch(ctx context.Context) {
-	go s.worker.run(ctx)
+func (s *Scheduler) Dispatch(ctx context.Context, workerCount int) {
+	go s.worker.run(ctx, workerCount)
 	for _, target := range s.targets {
 		go schedule(ctx, target, s)
 	}

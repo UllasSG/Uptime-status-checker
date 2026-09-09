@@ -25,6 +25,7 @@ func main() {
 
 	flag.StringVar(&addr, "addr", ":8080", "port the server should run on")
 	flag.StringVar(&configPath, "configPath", "configs/dev.json", "path to the config file")
+	flag.Parse()
 
 	cfg, err := config.Load(configPath)
 	if err != nil {
@@ -34,9 +35,9 @@ func main() {
 	srv := handler.NewServer(cfg)
 
 	jobs := make(chan scheduler.Job, 100)
-	worker := scheduler.NewWorker(jobs)
+	worker := scheduler.NewWorkerPool(jobs)
 	sched := scheduler.NewScheduler(cfg.Targets, jobs, worker)
-	sched.Dispatch(ctx)
+	sched.Dispatch(ctx, cfg.Workers)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", srv.Health)

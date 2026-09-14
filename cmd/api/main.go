@@ -2,8 +2,10 @@ package main
 
 import (
 	"context"
+	"database/sql"
 	"errors"
 	"flag"
+	"fmt"
 	"log"
 	"net/http"
 	"os"
@@ -32,6 +34,17 @@ func main() {
 	cfg, err := config.Load(configPath)
 	if err != nil {
 		log.Fatal("Cannot load config")
+	}
+
+	dsn := fmt.Sprintf("file:%s?_journal_mode=WAL&_busy_timeout=5000", cfg.DbPath)
+	db, err := sql.Open("sqlite3", dsn)
+	if err != nil {
+		log.Fatalf("Failed to open database: %v", err)
+	}
+	defer db.Close()
+
+	if err := db.Ping(); err != nil {
+		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
 	srv := handler.NewServer(cfg)

@@ -1,5 +1,5 @@
 {
-    "workers": 1,
+    "workers": 3,
     "db_path": "uptime.db",
     "retention_hrs": 720,
     "targets": [
@@ -8,32 +8,28 @@
         "url": "https://api.example.com/health",
         "interval_secs": 2,
         "timeout_secs": 5,
-        "expected_status": [200],
-        "failure_threshold": 3
+        "expected_status": [200]
       },
       {
         "name": "google",
         "url": "https://www.google.com",
         "interval_secs": 2,
         "timeout_secs": 5,
-        "expected_status": [200],
-        "failure_threshold": 3
+        "expected_status": [200]
       },
       {
         "name": "github-api",
         "url": "https://api.github.com",
         "interval_secs": 2,
         "timeout_secs": 5,
-        "expected_status": [200],
-        "failure_threshold": 3
+        "expected_status": [200]
       },
       {
         "name": "cloudflare",
         "url": "https://www.cloudflare.com",
         "interval_secs": 2,
         "timeout_secs": 5,
-        "expected_status": [200],
-        "failure_threshold": 3
+        "expected_status": [200]
       }
     ]
 }

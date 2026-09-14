@@ -11,7 +11,9 @@ import (
 	"syscall"
 	"time"
 
+	checker "github.com/UllasSG/Uptime-status-checker/internal/Checker"
 	"github.com/UllasSG/Uptime-status-checker/internal/config"
+	"github.com/UllasSG/Uptime-status-checker/internal/database"
 	"github.com/UllasSG/Uptime-status-checker/internal/handler"
 	"github.com/UllasSG/Uptime-status-checker/internal/scheduler"
 )
@@ -35,7 +37,10 @@ func main() {
 	srv := handler.NewServer(cfg)
 
 	jobs := make(chan scheduler.Job, 100)
-	worker := scheduler.NewWorkerPool(jobs)
+	client := &http.Client{}
+	checkerHttpClient := checker.NewChecker(client)
+	resultQueue := database.NewResultQueue(make(chan checker.JobResult, 1000))
+	worker := scheduler.NewWorkerPool(jobs, checkerHttpClient, resultQueue)
 	sched := scheduler.NewScheduler(cfg.Targets, jobs, worker)
 	sched.Dispatch(ctx, cfg.Workers)
 

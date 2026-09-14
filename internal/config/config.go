@@ -11,7 +11,6 @@ type Target struct {
 	IntervalSecs     int    `json:"interval_secs"`
 	TimeoutSecs      int    `json:"timeout_secs"`
 	ExpectedStatus   []int  `json:"expected_status"`
-	FailureThreshold int    `json:"failure_threshold"`
 }
 
 type Config struct {

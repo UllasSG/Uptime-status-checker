@@ -29,7 +29,11 @@ func schedule(ctx context.Context, t config.Target, s *Scheduler) {
 		case <-ctx.Done():
 			return
 		case <-ticker.C:
-			s.jobs <- Job{Target: t}
+			select {
+			case s.jobs <- Job{Target: t}:
+			case <-ctx.Done():
+				return
+			}
 		}
 	}
 }

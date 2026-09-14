@@ -24,7 +24,6 @@ func NewResultQueue(store *Store, buffer int, flushInterval time.Duration) *Resu
 
 func (rq *ResultQueue) Enqueue(JobResult checker.JobResult) {
 	rq.results <- JobResult
-	log.Printf("%s enqued , checked at %s", JobResult.Target.URL, JobResult.CheckedAt)
 }
 
 func (rq *ResultQueue) ScheduleBatches(ctx context.Context) {

@@ -18,6 +18,9 @@ import (
 	"github.com/UllasSG/Uptime-status-checker/internal/database"
 	"github.com/UllasSG/Uptime-status-checker/internal/handler"
 	"github.com/UllasSG/Uptime-status-checker/internal/scheduler"
+
+	// SQLite driver: registers itself as "sqlite3" via its init().
+	_ "github.com/mattn/go-sqlite3"
 )
 
 func main() {
@@ -47,18 +50,27 @@ func main() {
 		log.Fatalf("Failed to connect to database: %v", err)
 	}
 
-	srv := handler.NewServer(cfg)
+	store := database.NewStore(db)
+	if err := store.InitDB(ctx); err != nil {
+		log.Fatalf("Failed to init schema: %v", err)
+	}
+
+	srv := handler.NewServer(cfg, store)
 
 	jobs := make(chan scheduler.Job, 100)
 	client := &http.Client{}
 	checkerHttpClient := checker.NewChecker(client)
-	resultQueue := database.NewResultQueue(make(chan checker.JobResult, 1000))
+
+	resultQueue := database.NewResultQueue(store, 1000, 5*time.Second)
+	go resultQueue.ScheduleBatches(ctx)
 	worker := scheduler.NewWorkerPool(jobs, checkerHttpClient, resultQueue)
 	sched := scheduler.NewScheduler(cfg.Targets, jobs, worker)
 	sched.Dispatch(ctx, cfg.Workers)
 
 	mux := http.NewServeMux()
 	mux.HandleFunc("GET /healthz", srv.Health)
+	mux.HandleFunc("GET /status/{name}", srv.GetStatus)
+	mux.HandleFunc("GET /history/{name}", srv.GetHistory)
 	httpSrv := &http.Server{
 		Addr:    addr,
 		Handler: mux,
